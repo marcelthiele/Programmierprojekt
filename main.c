@@ -136,7 +136,7 @@ int8_t get_page_from_hd(uint32_t virt_address)
        seitentabelle[seitennummer].page_frame = queue_length++;
     }
 
-    u_int32_t hd_address = seitennummer * (1 << 12);
+    uint32_t hd_address = seitennummer * (1 << 12);
     uint16_t ra_address = ((uint16_t)(seitentabelle[seitennummer].page_frame)) << 12;
 
     copy_page_from_to(&hd_mem[hd_address], &ra_mem[ra_address]);
