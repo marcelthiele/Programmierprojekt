@@ -50,25 +50,19 @@ int8_t is_mem_full()
     return queue_length >= ((65536) / (1 << 12));
 }
 
-// Kopiert eine Seite von der Quell- zur Zieladresse
-void copy_page_from_to(uint8_t *source, uint8_t *dest)
-{
-    uint8_t *source_copy = source;
-    uint8_t *dest_copy = dest;
-
-    while (source_copy < source + (1 << 12))
-    {
-        *(dest_copy++) = *(source_copy++);
-    }
-}
-
 // Schreibt eine Seite aus dem RAM auf die Festplatte
 void write_page_to_hd(uint32_t seitennummer)
 {
     u_int32_t hd_address = seitennummer * (1 << 12);
     uint16_t ra_address = ((uint16_t)(seitentabelle[seitennummer].page_frame)) << 12;
 
-    copy_page_from_to(&ra_mem[ra_address], &hd_mem[hd_address]);
+	// Hier passiert die eigentliche Write-Operation
+    uint8_t *source = &ra_mem[ra_address];
+    uint8_t *dest = &hd_mem[hd_address];
+    while (source < &ra_mem[ra_address] + (1 << 12)) // So lange wir noch Bytes von der Seite lesen
+    {
+        *(dest++) = *(source++);	// Kopiere das aktuelle Byte auf den HD
+    }
 }
 
 // Initialisiert die Queue
@@ -142,7 +136,12 @@ void get_page_from_hd(uint32_t virt_address)
     uint32_t hd_address = seitennummer * (1 << 12);
     uint16_t ra_address = ((uint16_t)(seitentabelle[seitennummer].page_frame)) << 12;
 
-    copy_page_from_to(&hd_mem[hd_address], &ra_mem[ra_address]);
+    uint8_t *source = &hd_mem[hd_address];
+    uint8_t *dest = &ra_mem[ra_address];
+    while (source < &hd_mem[hd_address] + (1 << 12))
+    {
+        *(dest++) = *(source++);
+    }
 }
 
 // Gibt den Wert an der gegebenen virtuellen Adresse zurück
